@@ -1,0 +1,13 @@
+Makefile
+metadata.json
+icons
+/screenshots/
+nuvola-app-mentorfm
+eu.tiliado.NuvolaAppMentorfm.desktop
+eu.tiliado.NuvolaAppMentorfm.service
+eu.tiliado.NuvolaAppMentorfm.appdata.xml
+nuvola-app-mentorfm.metainfo.xml
+eu.tiliado.WebRuntimeAppMentorfm.desktop
+eu.tiliado.WebRuntimeAppMentorfm.service
+eu.tiliado.WebRuntimeAppMentorfm.appdata.xml
+nuvola-app-mentorfm.metainfo.xml
