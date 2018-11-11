@@ -2,6 +2,7 @@
   "id": "mentorfm",
   "name": "MentorFM",
   "home_url": "https://mentor.fm/",
+  "allowed_uri": "^https?://(connect\\.deezer\\.com|mentor\\.fm)/.*$",
   "maintainer_name": "Jiří Janoušek",
   "maintainer_link": "https://github.com/fenryxo",
   "version_major": 1,

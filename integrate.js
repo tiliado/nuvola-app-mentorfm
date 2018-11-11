@@ -25,17 +25,24 @@
 'use strict';
 
 (function (Nuvola) {
-  // Create media player component
-  var player = Nuvola.$object(Nuvola.MediaPlayer)
-
-  // Handy aliases
+  var C_ = Nuvola.Translate.pgettext
   var PlaybackState = Nuvola.PlaybackState
   var PlayerAction = Nuvola.PlayerAction
 
-  // Create new WebApp prototype
+  var ACTION_LIKE = 'like'
+  var ACTION_DISLIKE = 'dislike'
+
+  var player = Nuvola.$object(Nuvola.MediaPlayer)
   var WebApp = Nuvola.$WebApp()
 
-  // Initialization routines
+  WebApp._onInitAppRunner = function (emitter) {
+    Nuvola.WebApp._onInitAppRunner.call(this, emitter)
+    Nuvola.actions.addAction('playback', 'win', ACTION_LIKE, C_('Action', 'Like song'),
+      null, null, null, null)
+    Nuvola.actions.addAction('playback', 'win', ACTION_DISLIKE, C_('Action', 'Dislike song'),
+      null, null, null, null)
+  }
+
   WebApp._onInitWebWorker = function (emitter) {
     Nuvola.WebApp._onInitWebWorker.call(this, emitter)
 
@@ -47,39 +54,111 @@
     }
   }
 
-  // Page is ready for magic
   WebApp._onPageReady = function () {
-    // Connect handler for signal ActionActivated
+    player.addExtraActions([ACTION_LIKE, ACTION_DISLIKE])
     Nuvola.actions.connect('ActionActivated', this)
 
-    // Start update routine
     this.update()
   }
 
-  // Extract data from the web page
   WebApp.update = function () {
+    var elms = this._getElements()
     var track = {
-      title: null,
-      artist: null,
+      title: Nuvola.queryText('#song_name'),
+      artist: Nuvola.queryText('#messages_box_artist_name'),
       album: null,
-      artLocation: null,
+      artLocation: 'https://mentor.fm//images/radio_scontornata_650.png',
       rating: null
+    }
+    var state
+    if (elms.play) {
+      state = PlaybackState.PAUSED
+    } else if (elms.pause) {
+      state = PlaybackState.PLAYING
+    } else {
+      state = PlaybackState.UNKNOWN
+    }
+
+    var volume = 1.0
+    if (elms.volumebar) {
+      var width = elms.volumebar.firstChild.style.width
+      if (width.endsWith('%')) {
+        volume = width.substring(0, width.length - 1) / 100
+      }
     }
 
     player.setTrack(track)
-    player.setPlaybackState(PlaybackState.UNKNOWN)
+    player.setPlaybackState(state)
+    player.updateVolume(volume)
 
-    // Schedule the next update
+    player.setCanGoPrev(false)
+    player.setCanGoNext(elms.next)
+    player.setCanPlay(elms.play)
+    player.setCanPause(elms.pause)
+    player.setCanChangeVolume(!!elms.volumebar)
+    Nuvola.actions.updateEnabledFlag(ACTION_LIKE, !!elms.like)
+    Nuvola.actions.updateEnabledFlag(ACTION_DISLIKE, !!elms.dislike)
+
     setTimeout(this.update.bind(this), 500)
   }
 
-  // Handler of playback actions
   WebApp._onActionActivated = function (emitter, name, param) {
+    var elms = this._getElements()
     switch (name) {
-      case PlayerAction.Play:
+      case PlayerAction.TOGGLE_PLAY:
+        if (elms.play) {
+          Nuvola.clickOnElement(elms.play)
+        } else {
+          Nuvola.clickOnElement(elms.pause)
+        }
+        break
+      case PlayerAction.PLAY:
+        Nuvola.clickOnElement(elms.play)
+        break
+      case PlayerAction.PAUSE:
+      case PlayerAction.STOP:
+        Nuvola.clickOnElement(elms.pause)
+        break
+      case PlayerAction.NEXT_SONG:
+        Nuvola.clickOnElement(elms.next)
+        break
+      case PlayerAction.CHANGE_VOLUME:
+        Nuvola.clickOnElement(elms.volumebar, param, 0.5)
+        break
+      case ACTION_LIKE:
+        Nuvola.clickOnElement(elms.like)
+        break
+      case ACTION_DISLIKE:
+        Nuvola.clickOnElement(elms.dislike)
         break
     }
   }
 
+  WebApp._getElements = function () {
+    // Interesting elements
+    var elms = {
+      play: document.getElementById('play-button'),
+      pause: document.getElementById('pause-button'),
+      next: document.getElementById('next_song'),
+      volumebar: document.getElementById('volume_bar'),
+      like: document.getElementById('like'),
+      dislike: document.getElementById('dislike')
+    }
+
+    // Ignore disabled buttons
+    for (var key in elms) {
+      var elm = elms[key]
+      if (!elm || elm.disabled || elm.style.display === 'none' || elm.style.visibility === 'hidden') {
+        elms[key] = null
+      }
+    }
+
+    // Like button can be clicked only once per song
+    if (elms.like && elms.like.classList.contains('icondisabled')) {
+      elms.like = null
+    }
+    return elms
+  }
+
   WebApp.start()
-})(this)  // function(Nuvola)
+})(this) // function(Nuvola)
