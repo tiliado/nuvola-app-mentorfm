@@ -25,15 +25,15 @@
 'use strict';
 
 (function (Nuvola) {
-  var C_ = Nuvola.Translate.pgettext
-  var PlaybackState = Nuvola.PlaybackState
-  var PlayerAction = Nuvola.PlayerAction
+  const C_ = Nuvola.Translate.pgettext
+  const PlaybackState = Nuvola.PlaybackState
+  const PlayerAction = Nuvola.PlayerAction
 
-  var ACTION_LIKE = 'like'
-  var ACTION_DISLIKE = 'dislike'
+  const ACTION_LIKE = 'like'
+  const ACTION_DISLIKE = 'dislike'
 
-  var player = Nuvola.$object(Nuvola.MediaPlayer)
-  var WebApp = Nuvola.$WebApp()
+  const player = Nuvola.$object(Nuvola.MediaPlayer)
+  const WebApp = Nuvola.$WebApp()
 
   WebApp._onInitAppRunner = function (emitter) {
     Nuvola.WebApp._onInitAppRunner.call(this, emitter)
@@ -46,7 +46,7 @@
   WebApp._onInitWebWorker = function (emitter) {
     Nuvola.WebApp._onInitWebWorker.call(this, emitter)
 
-    var state = document.readyState
+    const state = document.readyState
     if (state === 'interactive' || state === 'complete') {
       this._onPageReady()
     } else {
@@ -62,15 +62,15 @@
   }
 
   WebApp.update = function () {
-    var elms = this._getElements()
-    var track = {
+    const elms = this._getElements()
+    const track = {
       title: Nuvola.queryText('#song_name'),
       artist: Nuvola.queryText('#messages_box_artist_name'),
       album: null,
       artLocation: 'https://mentor.fm//images/radio_scontornata_650.png',
       rating: null
     }
-    var state
+    let state
     if (elms.play) {
       state = PlaybackState.PAUSED
     } else if (elms.pause) {
@@ -79,9 +79,9 @@
       state = PlaybackState.UNKNOWN
     }
 
-    var volume = 1.0
+    let volume = 1.0
     if (elms.volumebar) {
-      var width = elms.volumebar.firstChild.style.width
+      const width = elms.volumebar.firstChild.style.width
       if (width.endsWith('%')) {
         volume = width.substring(0, width.length - 1) / 100
       }
@@ -103,7 +103,7 @@
   }
 
   WebApp._onActionActivated = function (emitter, name, param) {
-    var elms = this._getElements()
+    const elms = this._getElements()
     switch (name) {
       case PlayerAction.TOGGLE_PLAY:
         if (elms.play) {
@@ -136,7 +136,7 @@
 
   WebApp._getElements = function () {
     // Interesting elements
-    var elms = {
+    const elms = {
       play: document.getElementById('play-button'),
       pause: document.getElementById('pause-button'),
       next: document.getElementById('next_song'),
@@ -146,8 +146,8 @@
     }
 
     // Ignore disabled buttons
-    for (var key in elms) {
-      var elm = elms[key]
+    for (const key in elms) {
+      const elm = elms[key]
       if (!elm || elm.disabled || elm.style.display === 'none' || elm.style.visibility === 'hidden') {
         elms[key] = null
       }
